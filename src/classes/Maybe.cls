@@ -37,6 +37,8 @@ public abstract class Maybe implements Monad {
 
     public abstract Object getOrError();
 
+    public abstract Maybe orElseJust(Object valueInJust);
+
     public class Nothing extends Maybe {
         Nothing() {}
 
@@ -71,6 +73,10 @@ public abstract class Maybe implements Monad {
 
         public override Object getOrError() {
             throw new NoSuchElementException('Missing value in Nothing type');
+        }
+
+        public override Maybe orElseJust(Object valueInJust) {
+            return Maybe.of(valueInJust);
         }
     }
 
@@ -121,6 +127,10 @@ public abstract class Maybe implements Monad {
 
         public override Object getOrError() {
             return value;
+        }
+
+        public override Maybe orElseJust(Object valueInJust) {
+            return this;
         }
     }
 

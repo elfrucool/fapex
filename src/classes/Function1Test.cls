@@ -17,6 +17,12 @@ public class Function1Test {
                         .compose(plusOne)
                         .compose(plusOne)
                         .apply(2));
+
+        System.assertEquals(
+                '3',
+                ((Function1)Function1.composeFn(plusOne).apply(toString))
+                        .apply(2)
+        );
     }
 
     @IsTest
@@ -27,6 +33,12 @@ public class Function1Test {
                         .andThen(plusOne)
                         .andThen(plusOne)
                         .andThen(toString)
+                        .apply(2)
+        );
+
+        System.assertEquals(
+                '3',
+                ((Function1)Function1.andThenFn(toString).apply(plusOne))
                         .apply(2)
         );
     }

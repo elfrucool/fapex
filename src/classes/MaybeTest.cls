@@ -74,4 +74,10 @@ private class MaybeTest {
             System.assertEquals('Missing value in Nothing type', e.getMessage());
         }
     }
+
+    @IsTest
+    static void orElseJust() {
+        System.assertEquals(Maybe.of(123), Maybe.of(123).orElseJust('foo'));
+        System.assertEquals(Maybe.of('foo'), Maybe.Nothing.orElseJust('foo'));
+    }
 }

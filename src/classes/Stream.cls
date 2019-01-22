@@ -1,18 +1,20 @@
 public class Stream implements Functor {
     public static Stream of(List<Object> items) {
-        return new Stream(items, wrap());
+        return new Stream(items, Maybe.Nothing);
     }
 
-    static SingletonListFunction wrap() {
-        return new SingletonListFunction();
+    // ofFn :: [a] -> Stream a
+    public static Function1 ofFn() {
+        return new StreamOfFunction();
     }
 
-    static ForEachApplyFunction foreEachApply(Function1 function) {
-        return new ForEachApplyFunction(function);
+    // bindFn :: (a -> Stream b) -> Stream a -> Stream b
+    public static Function1 bindFn(Function1 function) {
+        return new BindFunction(function);
     }
 
-    static FlattenListFunction flattenList() {
-        return new FlattenListFunction();
+    static SingletonStreamFunction wrap() {
+        return new SingletonStreamFunction();
     }
 
     static FilterFunction filterFunction(Function1 predicate) {
@@ -20,21 +22,28 @@ public class Stream implements Functor {
     }
 
     final List<Object> items;
-    final Function1 transform;
+    // maybeTransformFunction :: Maybe Function1
+    final Maybe maybeTransformFunction;
 
-    Stream(List<Object> items, Function1 transform) {
+    Stream(List<Object> items, Maybe maybeTransformFunction) {
         this.items = items;
-        this.transform = transform;
+        this.maybeTransformFunction = maybeTransformFunction;
     }
 
     public List<Object> toList() {
-        List<Object> returnedValues = new List<Object>();
+        if (maybeTransformFunction.isPresent()) {
+            Function1 transformFunction = (Function1)maybeTransformFunction.getOrError();
 
-        for (Object item: items) {
-            returnedValues.addAll((List<Object>)transform.apply(item));
+            List<Object> returnedValues = new List<Object>();
+
+            for (Object item : items) {
+                returnedValues.addAll(((Stream)transformFunction.apply(item)).toList());
+            }
+
+            return returnedValues;
         }
 
-        return returnedValues;
+        return items;
     }
 
     // function type: a -> a
@@ -42,12 +51,14 @@ public class Stream implements Functor {
         return bind(function.andThen(wrap()));
     }
 
-    // function type: a -> [a]
+    // function type: a -> Stream a
     public Stream bind(Function1 function) {
-        return new Stream(
-                items,
-                transform.andThen(foreEachApply(function)).andThen(flattenList())
-        );
+        Maybe maybeBoundFunction =
+                maybeTransformFunction
+                        .fmap(Function1.andThenFn(bindFn(function))) // bindFn: recursive definition, be careful
+                        .orElseJust(function); // end recursion point
+
+        return new Stream(items, maybeBoundFunction);
     }
 
     // function type: a -> Boolean
@@ -69,52 +80,16 @@ public class Stream implements Functor {
         return result;
     }
 
-    // a -> [a]
-    public class SingletonListFunction extends Function1 {
+    // a -> Stream a
+    public class SingletonStreamFunction extends Function1 {
         public override Object apply(Object arg) {
             List<Object> wrapped = new List<Object>();
             wrapped.add(arg);
-            return wrapped;
+            return Stream.of(wrapped);
         }
     }
 
-    // (a -> b) -> [a] -> [b]
-    public class ForEachApplyFunction extends Function1 {
-        final Function1 function;
-
-        ForEachApplyFunction(Function1 function) {
-            this.function = function;
-        }
-
-        public override Object apply(Object arg) {
-            List<Object> input = (List<Object>)arg;
-            List<Object> output = new List<Object>();
-
-            for (Object i : input) {
-                output.add(function.apply(i));
-            }
-
-            return output;
-        }
-    }
-
-    // [[a]] -> [a]
-    public class FlattenListFunction extends Function1 {
-        public override Object apply(Object arg) {
-            // SFDC doesn't know how to cast List<List<Object>>
-            List<Object> input = (List<Object>)arg;
-            List<Object> output = new List<Object>();
-
-            for (Object chunk: input) {
-                // need to split cast in two steps (see above explanation)
-                output.addAll((List<Object>)chunk);
-            }
-
-            return output;
-        }
-    }
-
-    // [a] -> [a]
+    // a -> Stream a
     public class FilterFunction extends Function1 {
         // a -> Boolean
         private Function1 predicate;
@@ -130,7 +105,27 @@ public class Stream implements Functor {
                 result.add(arg);
             }
 
-            return result;
+            return Stream.of(result);
+        }
+    }
+
+    // (a -> Stream b) -> Stream a -> Stream b
+    public class BindFunction extends Function1 {
+        final Function1 function;
+
+        BindFunction(Function1 function) {
+            this.function = function;
+        }
+
+        public override Object apply(Object arg) {
+            return ((Stream)arg).bind(function);
+        }
+    }
+
+    // [a] -> Stream a
+    public class StreamOfFunction extends Function1 {
+        public override Object apply(Object arg) {
+            return Stream.of((List<Object>)arg);
         }
     }
 }

@@ -32,7 +32,18 @@ public class StreamTest {
     }
 
     @IsTest
-    static void bind() {
+    static void bind1() {
+        Stream stream = Stream.of(items);
+
+        System.assertEquals(
+                new List<Integer>{1, 1, 2, 2, 3, 3, 4, 4},
+                stream.bind(duplicateItem)
+                        .toList()
+        );
+    }
+
+    @IsTest
+    static void bind2() {
         Stream stream = Stream.of(items);
 
         System.assertEquals(
@@ -83,7 +94,7 @@ public class StreamTest {
 
         List<Object> filteredContacts =
                 (List<Object>) Stream.of(accounts)
-                        .bind(Functions.getSObjectChildren('Contacts'))
+                        .bind(Functions.getSObjectChildren('Contacts').andThen(Stream.ofFn()))
                         .filter(Functions.getSObjectField('LastName')
                                 .andThen(Functions.isEqualToPredicate('Ross')))
                         .toList();
@@ -103,10 +114,10 @@ public class StreamTest {
         }
     }
 
-    // x -> [x]
+    // x -> Stream x
     public class DuplicateItemFunction extends Function1 {
         public override Object apply(Object arg) {
-            return new List<Object>{arg, arg};
+            return Stream.of(new List<Object>{arg, arg});
         }
     }
 
