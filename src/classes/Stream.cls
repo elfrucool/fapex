@@ -3,6 +3,10 @@ public class Stream implements Functor {
         return new Stream(items, Maybe.Nothing);
     }
 
+    public static Stream ofValue(Object value) {
+        return of(new List<Object>{value});
+    }
+
     // ofFn :: [a] -> Stream a
     public static Function1 ofFn() {
         return new StreamOfFunction();
@@ -69,15 +73,26 @@ public class Stream implements Functor {
     // function type: (b, a) -> b
     // initial value type: b
     public Object foldLeft(Function2 accumulate, Object initial) {
-        List<Object> transformedItems = toList();
-
         Object result = initial;
 
-        for (Object newValue: transformedItems) {
-            result = accumulate.apply(result, newValue);
+        for (Object oldValue: items) {
+            List<Object> transformedItems = transformSingleItem(oldValue);
+
+            for (Object newValue : transformedItems) {
+                result = accumulate.apply(result, newValue);
+            }
         }
 
         return result;
+    }
+
+    List<Object> transformSingleItem(Object oldValue) {
+        Stream transformedStream =
+                (Stream) maybeTransformFunction
+                        .fmap(Functions.applyArgToFunction(oldValue))
+                        .getOrDefault(Stream.ofValue(oldValue));
+
+        return transformedStream.toList();
     }
 
     // a -> Stream a

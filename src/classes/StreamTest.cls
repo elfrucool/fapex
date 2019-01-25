@@ -20,6 +20,14 @@ public class StreamTest {
     }
 
     @IsTest
+    static void ofValue() {
+        System.assertEquals(
+                Stream.of(new List<Object>{1}).toList(),
+                Stream.ofValue(1).toList()
+        );
+    }
+
+    @IsTest
     static void fmap() {
         Stream stream = Stream.of(items);
 
