@@ -51,8 +51,19 @@ public class FunctionsTest {
     static void testApplyArgToFunction() {
         System.assertEquals(
                 '123',
-                Functions.applyArgToFunction(123)
+                Functions.applyArgToFunction()
+                        .apply(123)
                         .apply(Functions.toString())
+        );
+    }
+
+    @IsTest
+    static void appendToList() {
+        System.assertEquals(
+                new List<Object> {1, 2, 3},
+                Functions.appendToList()
+                        .apply(new List<Object> {1, 2})
+                        .apply(3)
         );
     }
 }

@@ -74,7 +74,7 @@ public class StreamTest {
     }
 
     @IsTest
-    static void foldLeft() {
+    static void foldLeft1() {
         Stream stream = Stream.of(items);
 
         System.assertEquals(
@@ -87,6 +87,13 @@ public class StreamTest {
                 stream.filter(isOdd)
                         .fmap(toString)
                         .foldLeft(concat, '')
+        );
+
+        System.assertEquals(
+                (1 + 2 + 3 + 4) * 4,
+                stream.bind(duplicateItem)
+                        .bind(duplicateItem)
+                        .foldLeft(add, 0)
         );
     }
 

@@ -30,8 +30,12 @@ public class Functions {
         return new ConcatenateStringFunction();
     }
 
-    public static Function1 applyArgToFunction(Object arg) {
-        return new ApplyArgToFunction(arg);
+    public static Function2 applyArgToFunction() {
+        return new ApplyArgToFunction();
+    }
+
+    public static Function2 appendToList() {
+        return new AppendToListFunction();
     }
 
     // b -> a -> b
@@ -113,15 +117,21 @@ public class Functions {
     }
 
     // a -> (a -> b) -> b
-    public class ApplyArgToFunction extends Function1 {
-        final Object savedArg;
-
-        ApplyArgToFunction(Object savedArg) {
-            this.savedArg = savedArg;
+    public class ApplyArgToFunction extends Function2 {
+        public override Object apply(Object arg1, Object arg2) {
+            return ((Function1)arg2).apply(arg1);
         }
+    }
 
-        public override Object apply(Object arg) {
-            return ((Function1)arg).apply(savedArg);
+    // [a] -> a -> [a]
+    public class AppendToListFunction extends Function2 {
+        public override Object apply(Object arg1, Object arg2) {
+            List<Object> originalList = (List<Object>) arg1;
+
+            List<Object> modifiedList = new List<Object>(originalList);
+            modifiedList.add(arg2);
+
+            return modifiedList;
         }
     }
 }

@@ -36,15 +36,7 @@ public class Stream implements Functor {
 
     public List<Object> toList() {
         if (maybeTransformFunction.isPresent()) {
-            Function1 transformFunction = (Function1)maybeTransformFunction.getOrError();
-
-            List<Object> returnedValues = new List<Object>();
-
-            for (Object item : items) {
-                returnedValues.addAll(((Stream)transformFunction.apply(item)).toList());
-            }
-
-            return returnedValues;
+            return (List<Object>) foldLeft(Functions.appendToList(), new List<Object>());
         }
 
         return items;
@@ -89,7 +81,7 @@ public class Stream implements Functor {
     List<Object> transformSingleItem(Object oldValue) {
         Stream transformedStream =
                 (Stream) maybeTransformFunction
-                        .fmap(Functions.applyArgToFunction(oldValue))
+                        .fmap(Functions.applyArgToFunction().apply(oldValue))
                         .getOrDefault(Stream.ofValue(oldValue));
 
         return transformedStream.toList();
