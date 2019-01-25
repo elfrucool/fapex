@@ -30,6 +30,10 @@ public class Functions {
         return new ConcatenateStringFunction();
     }
 
+    public static Function1 applyArgToFunction(Object arg) {
+        return new ApplyArgToFunction(arg);
+    }
+
     // b -> a -> b
     public class ConstantFunction extends Function1 {
         final Object value;
@@ -105,6 +109,19 @@ public class Functions {
         public override Object apply(Object arg) {
             SObject obj = (SObject)arg;
             return obj.getSObjects(fieldName);
+        }
+    }
+
+    // a -> (a -> b) -> b
+    public class ApplyArgToFunction extends Function1 {
+        final Object savedArg;
+
+        ApplyArgToFunction(Object savedArg) {
+            this.savedArg = savedArg;
+        }
+
+        public override Object apply(Object arg) {
+            return ((Function1)arg).apply(savedArg);
         }
     }
 }

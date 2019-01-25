@@ -46,4 +46,13 @@ public class FunctionsTest {
                 Functions.getSObjectChildren('Contacts').apply(account)
         );
     }
+
+    @IsTest
+    static void testApplyArgToFunction() {
+        System.assertEquals(
+                '123',
+                Functions.applyArgToFunction(123)
+                        .apply(Functions.toString())
+        );
+    }
 }
