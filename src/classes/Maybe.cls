@@ -39,6 +39,8 @@ public abstract class Maybe implements Monad {
 
     public abstract Maybe orElseJust(Object valueInJust);
 
+    public abstract Maybe filter(Function1 predicate);
+
     public class Nothing extends Maybe {
         Nothing() {}
 
@@ -77,6 +79,10 @@ public abstract class Maybe implements Monad {
 
         public override Maybe orElseJust(Object valueInJust) {
             return Maybe.of(valueInJust);
+        }
+
+        public override Maybe filter(Function1 predicate) {
+            return Nothing;
         }
     }
 
@@ -131,6 +137,12 @@ public abstract class Maybe implements Monad {
 
         public override Maybe orElseJust(Object valueInJust) {
             return this;
+        }
+
+        public override Maybe filter(Function1 predicate) {
+            return ((Boolean)predicate.apply(value))
+                    ? this
+                    : Nothing;
         }
     }
 

@@ -80,4 +80,11 @@ private class MaybeTest {
         System.assertEquals(Maybe.of(123), Maybe.of(123).orElseJust('foo'));
         System.assertEquals(Maybe.of('foo'), Maybe.Nothing.orElseJust('foo'));
     }
+
+    @IsTest
+    static void filter() {
+        System.assertEquals(Maybe.Nothing, Maybe.Nothing.filter(Functions.constant(true)));
+        System.assertEquals(Maybe.Nothing, Maybe.of(123).filter(Functions.isEqualToPredicate(456)));
+        System.assertEquals(Maybe.of(123), Maybe.of(123).filter(Functions.isEqualToPredicate(123)));
+    }
 }
