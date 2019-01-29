@@ -9,9 +9,10 @@ public interface Applicative extends Functor {
     Applicative pure(Object arg);
 
     // it applies the function given inside the given applicative to
-    // the value hold in the existing applicative
-    // apply :: f (a -> b) -> f a -> f b -- f a is the current value
-    Applicative apply(Applicative functionInApplicative);
+    // the value hold in the existing applicative.
+    // In Haskell, apply function name is (<*>), and its definition is:
+    // (<*>) :: f (a -> b) -> f a -> f b
+    Applicative apply(Applicative ap);
 
     // given a function and two applicatives (the existing and another)
     // it applies the function and the result is contained in an applicative

@@ -37,9 +37,9 @@ private class MaybeTest {
         System.assertEquals(Maybe.of(123), Maybe.Nothing.pure(123));
         System.assertEquals(Maybe.of(123), Maybe.of('foo').pure(123));
 
-        System.assertEquals(Maybe.Nothing, Maybe.Nothing.apply(Maybe.of(Functions.toString())));
-        System.assertEquals(Maybe.Nothing, Maybe.of(123).apply(Maybe.Nothing));
-        System.assertEquals(Maybe.of('123'), Maybe.of(123).apply(Maybe.of(Functions.toString())));
+        System.assertEquals(Maybe.Nothing, Maybe.of(Functions.toString()).apply(Maybe.Nothing));
+        System.assertEquals(Maybe.Nothing, Maybe.Nothing.apply(Maybe.of(123)));
+        System.assertEquals(Maybe.of('123'), Maybe.of(Functions.toString()).apply(Maybe.of(123)));
 
         System.assertEquals(Maybe.Nothing, Maybe.Nothing.liftA2(Functions.concatenateString(), Maybe.of('123')));
         System.assertEquals(Maybe.Nothing, Maybe.of('123').liftA2(Functions.concatenateString(), Maybe.Nothing));

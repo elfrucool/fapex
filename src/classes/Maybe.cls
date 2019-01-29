@@ -19,11 +19,11 @@ public abstract class Maybe implements Monad {
         return Maybe.of(arg);
     }
 
-    public Maybe apply(Applicative functionInApplicative) {
-        return apply((Maybe)functionInApplicative);
+    public Maybe apply(Applicative ap) {
+        return apply((Maybe) ap);
     }
 
-    public abstract Maybe apply(Maybe functionInApplicative);
+    public abstract Maybe apply(Maybe ap);
 
     public abstract Maybe liftA2(Function2 mergeFn, Applicative arg2);
 
@@ -55,7 +55,7 @@ public abstract class Maybe implements Monad {
         }
 
 
-        public override Maybe apply(Maybe functionInApplicative) {
+        public override Maybe apply(Maybe ap) {
             return this;
         }
 
@@ -107,14 +107,14 @@ public abstract class Maybe implements Monad {
             return Maybe.of(function.apply(value));
         }
 
-        public override Maybe apply(Maybe functionInApplicative) {
-            return (functionInApplicative instanceof Nothing)
+        public override Maybe apply(Maybe ap) {
+            return (ap instanceof Nothing)
                     ? Nothing
-                    : Maybe.of(((Function1)(((Just)functionInApplicative).value)).apply(value));
+                    : ap.fmap((Function1)value);
         }
 
         public override Maybe liftA2(Function2 mergeFn, Applicative arg2) {
-            return (Maybe)arg2.apply(pure(mergeFn.apply(value)));
+            return (Maybe) arg2.fmap((Function1) mergeFn.apply(value));
         }
 
         public override Maybe bind(Function1 aToMonadB) {
