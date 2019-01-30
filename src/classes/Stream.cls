@@ -1,4 +1,4 @@
-public class Stream implements Applicative {
+public class Stream implements Monad {
     public static Stream of(List<Object> items) {
         return new Stream(items, Maybe.Nothing);
     }

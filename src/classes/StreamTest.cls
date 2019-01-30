@@ -134,6 +134,15 @@ public class StreamTest {
     }
 
     @IsTest
+    static void streamIsMonad() {
+        Monad streamAsMonad = Stream.ofValue(1);
+        System.assertEquals(
+                new List<Integer> {1, 1},
+                ((Stream)streamAsMonad.bind(duplicateItem)).toList()
+        );
+    }
+
+    @IsTest
     static void moreComplexExample() {
         FunctionsTestUtil.insertAccountWithTwoContacts();
 
