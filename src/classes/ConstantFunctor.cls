@@ -16,4 +16,15 @@ public class ConstantFunctor implements Functor{
     public Functor fmap(Function1 function) {
         return this;
     }
+
+    public Boolean equals(Object obj) {
+        return obj instanceof ConstantFunctor
+                ? System.equals(value, ((ConstantFunctor)obj).value)
+                : false;
+    }
+
+    public override Integer hashCode() {
+        return System.hashCode(value);
+    }
+
 }

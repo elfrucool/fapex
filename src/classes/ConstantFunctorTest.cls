@@ -15,4 +15,17 @@ private class ConstantFunctorTest {
                 ((ConstantFunctor)constFunctor.fmap(Functions.toString())).getConst()
         );
     }
+
+    @IsTest
+    static void equalsAndHashCode() {
+        System.assertEquals(
+                ConstantFunctor.of('123'),
+                ConstantFunctor.of('123')
+        );
+
+        System.assertEquals(
+                System.hashCode('123'),
+                ConstantFunctor.of('123').hashCode()
+        );
+    }
 }
