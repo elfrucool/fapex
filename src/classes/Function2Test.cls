@@ -9,10 +9,18 @@ public class Function2Test {
     }
 
     @IsTest
-    static void currying() {
+    static void curryingAndPartialApplication() {
         System.assertEquals(
                 5,
                 plus.apply(2)
+                        .apply(3)
+        );
+
+        Function1 curriedPlus = plus.curry();
+
+        System.assertEquals(
+                5,
+                ((Function1)curriedPlus.apply(2))
                         .apply(3)
         );
     }

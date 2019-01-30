@@ -1,25 +1,41 @@
 public abstract class Function2 {
     public abstract Object apply(Object arg1, Object arg2);
 
+    public Function1 curry() {
+        return new CurriedFunction2(this);
+    }
+
     public Function1 apply(Object arg1) {
-        return new CurriedFunction2(arg1, this);
+        return new Function2Applied1Arg(arg1, this);
     }
 
     public Function2 andThen(Function1 nextFunction) {
         return new ComposedFunction2(this, nextFunction);
     }
 
-    public class CurriedFunction2 extends Function1 {
+    public class Function2Applied1Arg extends Function1 {
         final Object arg1;
         final Function2 originalFunction;
 
-        CurriedFunction2(Object arg1, Function2 originalFunction) {
+        Function2Applied1Arg(Object arg1, Function2 originalFunction) {
             this.arg1 = arg1;
             this.originalFunction = originalFunction;
         }
 
         public override Object apply(Object arg) {
             return originalFunction.apply(arg1, arg);
+        }
+    }
+
+    public class CurriedFunction2 extends Function1 {
+        final Function2 originalFunction;
+
+        CurriedFunction2(Function2 originalFunction) {
+            this.originalFunction = originalFunction;
+        }
+
+        public override Object apply(Object arg) {
+            return originalFunction.apply(arg);
         }
     }
 
