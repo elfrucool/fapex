@@ -1,4 +1,4 @@
-public class Stream implements Functor {
+public class Stream implements Applicative {
     public static Stream of(List<Object> items) {
         return new Stream(items, Maybe.Nothing);
     }
@@ -26,7 +26,8 @@ public class Stream implements Functor {
     }
 
     final List<Object> items;
-    // maybeTransformFunction :: Maybe Function1
+
+    // maybeTransformFunction :: Maybe (a -> Stream b)
     final Maybe maybeTransformFunction;
 
     Stream(List<Object> items, Maybe maybeTransformFunction) {
@@ -87,6 +88,18 @@ public class Stream implements Functor {
         return transformedStream.toList();
     }
 
+    public Stream pure(Object arg) {
+        return Stream.ofValue(arg);
+    }
+
+    public Stream apply(Applicative ap) { // ap must be Stream
+        return bind(new StreamApplicativeFunction((Stream)ap));
+    }
+
+    public Stream liftA2(Function2 mergeFn, Applicative ap) { // ap must be Stream
+        return fmap(mergeFn.curry()).apply((Stream)ap);
+    }
+
     // a -> Stream a
     public class SingletonStreamFunction extends Function1 {
         public override Object apply(Object arg) {
@@ -133,6 +146,21 @@ public class Stream implements Functor {
     public class StreamOfFunction extends Function1 {
         public override Object apply(Object arg) {
             return Stream.of((List<Object>)arg);
+        }
+    }
+
+    // Stream a -> Stream (a -> b) -> Stream b
+    public class StreamApplicativeFunction extends Function1 {
+        final Stream ap;
+
+        StreamApplicativeFunction(Stream ap) {
+            this.ap = ap;
+        }
+
+        public override Object apply(Object arg) {
+            // containedFn :: a -> b
+            Function1 containedFn = (Function1) arg;
+            return ap.fmap(containedFn);
         }
     }
 }

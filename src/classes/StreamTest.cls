@@ -98,6 +98,42 @@ public class StreamTest {
     }
 
     @IsTest
+    static void streamIsApplicative() {
+        Applicative streamAsAp = Stream.ofValue(1);
+        System.assertEquals(Stream.ofValue('1').toList(), ((Stream)streamAsAp.pure('1')).toList());
+
+        System.assertEquals( // apply invocation over simple stream
+                new List<Integer>{2, 4, 6, 7},
+                Stream.of(new List<Function1>{times2, add.apply(5)})
+                        .apply(Stream.of(new List<Integer>{1, 2}))
+                        .toList()
+        );
+
+        System.assertEquals( // apply invocation over transformed stream
+                new List<String>{'2', '4', '6', '7'},
+                Stream.of(new List<Function1>{times2, add.apply(5)})
+                        .fmap(Function1.andThenFn(Functions.toString()))
+                        .apply(Stream.of(new List<Integer>{1, 2}))
+                        .toList()
+        );
+
+        System.assertEquals( // liftA2 invocation over simple stream
+                new List<Integer> {4, 5, 5, 6},
+                Stream.of(new List<Integer> {1, 2})
+                        .liftA2(add, Stream.of(new List<Integer> {3, 4}))
+                        .toList()
+        );
+
+        System.assertEquals( // liftA2 invocation over transformed stream
+                new List<Integer> {5, 6, 7, 8},
+                Stream.of(new List<Integer> {1, 2})
+                        .fmap(times2)
+                        .liftA2(add, Stream.of(new List<Integer> {3, 4}))
+                        .toList()
+        );
+    }
+
+    @IsTest
     static void moreComplexExample() {
         FunctionsTestUtil.insertAccountWithTwoContacts();
 
