@@ -37,6 +37,7 @@ public class IdentityMonad implements Monad {
         return pure(mergeFn.apply(value)).apply(ap);
     }
 
+    // bind :: (a -> f b) -> f a -> f b
     public IdentityMonad bind(Function1 aToMonadB) {
         return (IdentityMonad) aToMonadB.apply(value);
     }
