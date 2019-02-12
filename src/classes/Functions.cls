@@ -2,38 +2,47 @@
  * some generic useful functions.
  */
 public class Functions {
+    // b -> a -> b
     public static Function1 constant(Object value) {
         return new ConstantFunction(value);
     }
 
+    // a -> a
     public static Function1 identity() {
         return new IdentityFunction();
     }
 
+    // a -> String
     public static Function1 toString() {
         return new ToStringFunction();
     }
 
+    // String -> SObject -> a
     public static Function1 getSObjectField(String fieldName) {
         return new GetSObjectField(fieldName);
     }
 
+    // String -> SObject -> [SObject]
     public static Function1 getSObjectChildren(String fieldName) {
         return new GetSObjectChildren(fieldName);
     }
 
+    // a -> a -> Boolean
     public static Function1 isEqualToPredicate(Object expected) {
         return new IsEqualToPredicate(expected);
     }
 
+    // String -> String -> String
     public static Function2 concatenateString() {
         return new ConcatenateStringFunction();
     }
 
+    // a -> (a -> b) -> b
     public static Function2 applyArgToFunction() {
         return new ApplyArgToFunction();
     }
 
+    // [a] -> a -> [a]
     public static Function2 appendToList() {
         return new AppendToListFunction();
     }
