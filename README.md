@@ -6,6 +6,8 @@ Functional Salesforce Apex Library
 
 This library brings to Salesforce Apex programming language the foundation of functional programming (FP). Although it's far from perfect (the author is neither Apex nor FP expert) I hope missing parts could be built on top of it.
 
+It is similar to other libraries like [apex-lambda](https://github.com/ipavlic/apex-lambda) and [R.apex](https://github.com/Click-to-Cloud/R.apex) but it tries to be more generic (not just for `SObject` type) and to use strictly functional programming principles (purity, referential transparency, good category theory)
+
 ## Installation
 
 Just copy all the `*.cls` files to your org. 
@@ -164,16 +166,177 @@ public class GetAmountFunction extends Function1 {
 **note** want it easier?
 - ask salesforce to support lambdas: https://success.salesforce.com/ideaView?id=08730000000Dk5sAAC
 
-
-### Dealing with errors without exceptions
-
-WIP - The `Either` type
-
 ### Working with collections
 
-WIP - The `Stream` type
+This is one of my favorites, many of the work in apex is working with collections of records, although the `Stream` type is generic enough to work with any type, it's a good fit to work with query results, try to do the same without _f_-apex
+
+```apex
+List<MyCoolObject__c> myCoolObjects = [ // Keys__c has values like 'foo,bar,baz'
+    SELECT Id, (SELECT Id, Keys__c FROM Children__r)
+    FROM MyCoolObject__c
+];
+
+List<String> allButFoo =
+        Stream.of(myCoolObjects)
+            .bind(Functions.getSObjectChildren('Children__r').andThen(Stream.ofFn()))
+            .fmap(Functions.getSObjectField('Keys__c'))
+            .bind(Functions.split().andThen(Stream.ofFn()))
+            .filter(Functions.negate().compose(Functions.isEqualToPredicate('foo')))
+            .toList();
+```
+
+
+### Dealing with errors without exceptions (and without early returns)
+
+#### Error handling without early returns
+
+without _f_-apex:
+
+```apex
+Response someService(someInput...) {
+    Result result1 = getResult1(someInput);
+    
+    if (!result1.success) {
+        return new FailingResponse(result1.errorMessage);
+    }
+    
+    Result result2 = getResult2(result1);
+    
+    if (!result2.success) {
+        return new FailingResponse(result2.errorMessage);
+    }
+    
+    // ....
+    
+    Result resultN = getResultN(resultM);
+    
+    if (!resultN.success) {
+        return new FailingResponse(resultN.errorMessage);
+    }
+    
+    return new SuccessResponse(resultN);
+}
+```
+
+with _f_-apex:
+
+```apex
+// see the power of function compositio
+static final Function1 RESULT_TO_EITHER_FUNCTION = new ResultToEitherFunction(); 
+static final Function1 GET_RESULT1_FUNCTION =
+    RESULT_TO_EITHER_FUNCTION.compose(new GetResult1Function());
+static final Function1 GET_RESULT2_FUNCTION =
+    RESULT_TO_EITHER_FUNCTION.compose(new GetResult2Function());
+// ...
+static final Function1 GET_RESULT_N_FUNCTION =
+    RESULT_TO_EITHER_FUNCTION.compose(new GetResultNFunction());
+    
+Response someService(someInput...) {
+    return (Response)Either.Right(someInput)
+                .bind(GET_RESULT1_FUNCTION)
+                .bind(GET_RESULT2_FUNCTION)
+                .bind(...) //
+                .bind(GET_RESULT_N_FUNCTION)
+                .either(
+                    new MakeFailingResponseFunction(),
+                    new MakeSuccessResponseFunction()
+                );
+}
+
+// later in code
+class ResultToEitherFunction extends Function1 {
+    public override Object apply(Object arg)
+        return ((Result)result).succes ? Either.Right(result) : Either.Left(result);
+    }
+}
+
+class GetResult1Function extends Function1 {
+    public override Object apply(Object arg) {
+        return ParentClass.getResult1((SomeInput)arg);
+    }
+}
+
+class GetResult2Function extends Function1 {
+    public override Object apply(Object arg) {
+        return ParentClass.getResult1((Result)arg);
+    }
+}
+
+class GetResultNFunction extends Function1 {
+    public override Object apply(Object arg) {
+        return ParentClass.getResultN((Result)arg);
+    }
+}
+
+class MakeFailingResponseFunction extends Function1 {
+    public override Object apply(Object arg) {
+        return new FailingResponse(((Result)arg).errorMessage);
+    }
+}
+
+class MakeSuccessResponseFunction extends Function1 {
+    public override Object apply(Object arg) {
+        return new SuccessResponse((Result)arg);
+    }
+}
+```
+
+**note** want it shorter?
+- ask salesforce to support lambdas: https://success.salesforce.com/ideaView?id=08730000000Dk5sAAC
+
+
+#### Error handling without exceptions
+
+Without _f_-apex:
+
+```apex
+Response service(SomeInput input) {
+    try {
+        Result result = getThrowingResult1(input);
+        Result result2 = getThrowingResult2(result);
+        return new SuccessResponse(result2);
+    } catch (Exception1 ex) {
+        return new FailingResponse(ex.getMessage());
+    } catch (Exception2 ex) {
+        return new FailingResponse(ex.getMessage());
+    }
+}
+```
+
+With _f_-apex, we have the `Either.tryFn(Function1 f)` function that performs a `try-catch` and wraps the catched exception in `Either.Left` while the good result is returned in `Either.Right`.
+
+```apex
+Response service(SomeInput input) {
+    (Response)Either.Right(input)
+        .bind(Either.tryFn(GET_THROWING_RESULT1_FUNCTION)) // apply: return getThrowingResult(..)
+        .bind(Either.tryFn(GET_THROWING_RESULT2_FUNCTION))
+        .either(
+            EXCEPTION_TO_FAILING_RESPONSE_FUNCTION,
+            SUCCESS_RESPONSE_FUNCTION
+        );
+}
+// define functions similar as above
+```
 
 ## Components
+
+| Object Type    | Name        | Description                                  |
+|----------------|-------------|----------------------------------------------|
+| Abstract class | Function1   | The foundation of everything                 |
+|                |             | represents a funciton with a single argument |
+|                |             | able to be composed or chained               |
+| Abstract class | Function2   | Similar to Function1 but with two arguments  |
+|                |             | it can be partially applied and curried      |
+| Interface      | Functor     | The Functor type                             |
+| Interface      | Applicative | The Applicative Functor type                 |
+| Interface      | Monad       | The Monad type                               |
+| Class          | Maybe       | The Maybe type can hold a value or be empty  |
+|                |             | and make transformations in a monadic way    |
+| Class          | Either      | The Either type can have a right value or a  |
+|                |             | left value (usually representing an error)   |
+|                |             | and make transformations in a monadic way    |
+| Class          | Stream      | Monading interface for working with lists    |
+| Class          | Functions   | A collection of useful functions             |
 
 ## Troubleshooting
 
@@ -183,7 +346,9 @@ Check `FunctionsTestUtil.insertAccountWithTwoContacts()` to see if you need to a
 
 There is still **a lot** of pending work, below is a non-exhaustive list:
 
+* Havning N-ary functions instead of `Function1, Function2` with full _partial application/curry_ support.
 * Including more category theory types (traversables, foldables, semigroups, monoids, arrows)
+* Making `Stream` type even more lazy (thinks like `head, tail, drop, takeWhile` that not evaluate the entire list)
 * Include a _kind of_ `IO` monad for dealing with database (specially for consolidating database actions)
 * Include `Lenses` and/or `Optics` types (either simple or monadic)
 * Add more useful generic functions
@@ -196,4 +361,8 @@ There are many ways to contribute, for the moment I see these two:
     - support generics: https://success.salesforce.com/ideaView?id=08730000000aDnYAAU
     - support lambdas: https://success.salesforce.com/ideaView?id=08730000000Dk5sAAC
 
-2. improve the code: (either fork it and create your version or submit a PR)
+2. improve the code: (either fork it and create your version or submit a PR), guidelines:
+    - keep functions _pure_ (no observable side effects)
+    - keep functions _referentially transparent_ (always returning same output given same input)
+    - keep _immutablility_ (do not modify input state, do not modify functions state)
+    - do the tests in a way that assert _correct behavior_ not just code coverage
