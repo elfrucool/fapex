@@ -2,6 +2,12 @@
  * some generic useful functions.
  */
 public class Functions {
+    static final Functions.IdentityFunction IDENTITY_FUNCTION = new IdentityFunction();
+    static final Functions.ToStringFunction TO_STRING_FUNCTION = new ToStringFunction();
+    static final Functions.ConcatenateStringFunction CONCATENATE_STRING_FUNCTION = new ConcatenateStringFunction();
+    static final Functions.ApplyArgToFunction APPLY_ARG_TO_FUNCTION = new ApplyArgToFunction();
+    static final Functions.AppendToListFunction APPEND_TO_LIST_FUNCTION = new AppendToListFunction();
+
     // b -> a -> b
     public static Function1 constant(Object value) {
         return new ConstantFunction(value);
@@ -9,12 +15,12 @@ public class Functions {
 
     // a -> a
     public static Function1 identity() {
-        return new IdentityFunction();
+        return IDENTITY_FUNCTION;
     }
 
     // a -> String
     public static Function1 toString() {
-        return new ToStringFunction();
+        return TO_STRING_FUNCTION;
     }
 
     // String -> SObject -> a
@@ -34,17 +40,17 @@ public class Functions {
 
     // String -> String -> String
     public static Function2 concatenateString() {
-        return new ConcatenateStringFunction();
+        return CONCATENATE_STRING_FUNCTION;
     }
 
     // a -> (a -> b) -> b
     public static Function2 applyArgToFunction() {
-        return new ApplyArgToFunction();
+        return APPLY_ARG_TO_FUNCTION;
     }
 
     // [a] -> a -> [a]
     public static Function2 appendToList() {
-        return new AppendToListFunction();
+        return APPEND_TO_LIST_FUNCTION;
     }
 
     // b -> a -> b
