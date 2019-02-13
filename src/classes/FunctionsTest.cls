@@ -66,4 +66,22 @@ public class FunctionsTest {
                         .apply(3)
         );
     }
+
+    @IsTest
+    static void split() {
+        System.assertEquals(
+                new List<String>{'foo', 'bar', 'baz'},
+                Functions.split('\\|').apply('foo|bar|baz')
+        );
+        System.assertEquals(
+                new List<String>{'foo', 'bar', 'baz'},
+                Functions.split().apply('foo,bar,baz')
+        );
+    }
+
+    @IsTest
+    static void negate() {
+        System.assertEquals(false, Functions.negate().apply(true));
+        System.assertEquals(true, Functions.negate().apply(false));
+    }
 }

@@ -7,6 +7,8 @@ public class Functions {
     static final Functions.ConcatenateStringFunction CONCATENATE_STRING_FUNCTION = new ConcatenateStringFunction();
     static final Functions.ApplyArgToFunction APPLY_ARG_TO_FUNCTION = new ApplyArgToFunction();
     static final Functions.AppendToListFunction APPEND_TO_LIST_FUNCTION = new AppendToListFunction();
+    static final Functions.SplitFunction SPLIT_COMMA_FUNCTION = new SplitFunction(',');
+    static final Functions.NegateFunction NEGATE_FUNCTION = new NegateFunction();
 
     // b -> a -> b
     public static Function1 constant(Object value) {
@@ -52,6 +54,23 @@ public class Functions {
     public static Function2 appendToList() {
         return APPEND_TO_LIST_FUNCTION;
     }
+
+    // String -> String -> [String]
+    public static Function1 split(String regex) {
+        return new SplitFunction(regex);
+    }
+
+    // String -> [String] -- uses comma as separator
+    public static Function1 split() {
+        return SPLIT_COMMA_FUNCTION;
+    }
+
+    // Boolean -> Boolean
+    public static Function1 negate() {
+        return NEGATE_FUNCTION;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // b -> a -> b
     public class ConstantFunction extends Function1 {
@@ -147,6 +166,26 @@ public class Functions {
             modifiedList.add(arg2);
 
             return modifiedList;
+        }
+    }
+
+    // String -> String -> [String]
+    public class SplitFunction extends Function1 {
+        final String regex;
+
+        SplitFunction(String regex) {
+            this.regex = regex;
+        }
+
+        public override Object apply(Object arg) {
+            return ((String)arg).split(regex);
+        }
+    }
+
+    // Boolean -> Boolean
+    public class NegateFunction extends Function1 {
+        public override Object apply(Object arg) {
+            return !((Boolean)arg);
         }
     }
 }
