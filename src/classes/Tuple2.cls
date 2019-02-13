@@ -5,9 +5,25 @@ public class Tuple2 {
     // SWAP_FN :: (a,b) -> (b,a)
     static final Function1 SWAP_FN = new SwapFunction();
 
+    // FST_FN :: (a,b) -> a
+    static final Function1 FST_FN = new FirstFunction();
+
+    // SND_FN :: (a,b) -> b
+    static final Function1 SND_FN = new SecondFunction();
+
     // ofFn :: a -> b -> (a,b)
     public static Function2 ofFn() {
         return OF_FN;
+    }
+
+    // fstFn :: (a,b) -> a
+    public static Function1 fstFn() {
+        return FST_FN;
+    }
+
+    // sndFn :: (a,b) -> b
+    public static Function1 sndFn() {
+        return SND_FN;
     }
 
     // swapFn :: (a,b) -> (b,a)
@@ -106,6 +122,18 @@ public class Tuple2 {
     class OfFunction extends Function2 {
         public override Object apply(Object arg1, Object arg2) {
             return Tuple2.of(arg1, arg2);
+        }
+    }
+
+    class FirstFunction extends Function1 {
+        public override Object apply(Object arg) {
+            return ((Tuple2)arg).fst();
+        }
+    }
+
+    class SecondFunction extends Function1 {
+        public override Object apply(Object arg) {
+            return ((Tuple2)arg).snd();
         }
     }
 

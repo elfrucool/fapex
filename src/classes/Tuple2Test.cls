@@ -12,6 +12,9 @@ private class Tuple2Test {
         Tuple2 tuple = Tuple2.of(123, 'foo');
         System.assertEquals((Object)123, tuple.fst());
         System.assertEquals((Object)'foo', tuple.snd());
+
+        System.assertEquals((Object)123, Tuple2.fstFn().apply(tuple));
+        System.assertEquals((Object)'foo', Tuple2.sndFn().apply(tuple));
     }
 
     @IsTest
