@@ -11,11 +11,20 @@ public class StreamTest {
 
     @IsTest
     static void toList() {
-        Stream stream = Stream.of(items);
+        Stream itemsStream = Stream.of(items);
 
         System.assertEquals(
                 items,
-                stream.toList()
+                itemsStream.toList()
+        );
+
+        List<Integer> itemsAgain =
+                (List<Integer>) Stream.of(items)
+                        .toList(new List<Integer>());
+
+        System.assertEquals(
+                items,
+                itemsAgain
         );
     }
 
@@ -165,6 +174,64 @@ public class StreamTest {
 
         Contact filteredContact = (Contact)filteredContacts.get(0);
         System.assertEquals('Bob', filteredContact.FirstName);
+    }
+
+    @IsTest
+    static void toMap() {
+        List<Tuple2> tuples = new List<Tuple2>{
+                Tuple2.of('Bob', 'sales'),
+                Tuple2.of('Mary', 'engineering'),
+                Tuple2.of('George', 'management')
+        };
+
+        // unfortunately, apex does not allow casting for the keys, so using Object as the key type
+        Map<Object, String> peopleByRole = (Map<Object, String>)
+                Stream.of(tuples)
+                    .foldLeft(
+                        Stream.toMap(Tuple2.sndFn(), Tuple2.fstFn()),
+                        new Map<Object, String>()
+                );
+
+        System.assertEquals(
+                new Map<Object, String>{
+                        'sales' => 'Bob',
+                        'engineering' => 'Mary',
+                        'management' => 'George'
+                },
+                peopleByRole
+        );
+    }
+
+    @IsTest
+    static void groupBy() {
+        List<Tuple2> tuples = new List<Tuple2>{
+                Tuple2.of('Bob', 'sales'),
+                Tuple2.of('Mary', 'engineering'),
+                Tuple2.of('John', 'engineering'),
+                Tuple2.of('George', 'management')
+        };
+
+        Map<Object, List<String>> peopleByRole = (Map<Object, List<String>>)
+                Stream.of(tuples)
+                        .foldLeft(
+                            Stream.groupBy(Tuple2.sndFn(), Tuple2.fstFn(), new List<String>()),
+                            new Map<Object, List<String>>()
+                        );
+
+        System.assertEquals(
+                new Map<Object, List<String>>{
+                        'sales' => new List<String>{
+                                'Bob'
+                        },
+                        'engineering' => new List<String>{
+                                'Mary', 'John'
+                        },
+                        'management' => new List<String>{
+                                'George'
+                        }
+                },
+                peopleByRole
+        );
     }
 
     // Int -> Int

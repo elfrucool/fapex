@@ -17,6 +17,16 @@ public class Stream implements Monad {
         return new BindFunction(function);
     }
 
+    // toMap :: (a -> k) -> (a -> v) -> Map k v -> a -> Map k v
+    public static Function2 toMap(Function1 keyFunction, Function1 valueFunction) {
+        return new ToMapFunction(keyFunction, valueFunction);
+    }
+
+    // groupBy :: (a -> k) -> (a -> v) -> [v] -> Map k [v] -> a -> Map k [v]
+    public static Function2 groupBy(Function1 keyFunction, Function1 valueFunction, List<Object> listTemplate) {
+        return new GroupByFunction(keyFunction, valueFunction, listTemplate);
+    }
+
     static SingletonStreamFunction wrap() {
         return new SingletonStreamFunction();
     }
@@ -36,8 +46,12 @@ public class Stream implements Monad {
     }
 
     public List<Object> toList() {
+        return toList(new List<Object>());
+    }
+
+    public List<Object> toList(List<Object> template) {
         if (maybeTransformFunction.isPresent()) {
-            return (List<Object>) foldLeft(Functions.appendToList(), new List<Object>());
+            return (List<Object>) foldLeft(Functions.appendToList(), template);
         }
 
         return items;
@@ -161,6 +175,50 @@ public class Stream implements Monad {
             // containedFn :: a -> b
             Function1 containedFn = (Function1) arg;
             return ap.fmap(containedFn);
+        }
+    }
+
+    // ToMapFunction :: (a -> k) -> (a -> v) -> Map k v -> a -> Map k v
+    public class ToMapFunction extends Function2 {
+        final Function1 keyFunction;
+        final Function1 valueFunction;
+
+        ToMapFunction(Function1 keyFunction, Function1 valueFunction) {
+            this.keyFunction = keyFunction;
+            this.valueFunction = valueFunction;
+        }
+
+        public override Object apply(Object arg1, Object arg2) {
+            ((Map<Object, Object>)arg1).put(keyFunction.apply(arg2), valueFunction.apply(arg2));
+
+            return arg1;
+        }
+    }
+
+    // GrpupByFunction :: (a -> k) -> (a -> v) -> [v] -> Map k [v] -> a -> Map k [v]
+    public class GroupByFunction extends Function2 {
+        final Function1 keyFunction;
+        final Function1 valueFunction;
+        final List<Object> listTemplate;
+
+        GroupByFunction(Function1 keyFunction, Function1 valueFunction, List<Object> listTemplate) {
+            this.keyFunction = keyFunction;
+            this.valueFunction = valueFunction;
+            this.listTemplate = listTemplate;
+        }
+
+        public override Object apply(Object arg1, Object arg2) {
+            Object key = keyFunction.apply(arg2);
+
+            Map<Object, List<Object>> result = (Map<Object, List<Object>>) arg1;
+
+            if (!result.containsKey(key)) {
+                result.put(key, listTemplate.clone());
+            }
+
+            result.get(key).add(valueFunction.apply(arg2));
+
+            return arg1;
         }
     }
 }
