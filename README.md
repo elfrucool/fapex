@@ -57,33 +57,6 @@ class MultiplyByTwoFunction extends Function1 {
 }
 ```
 
-Many times you need to group values into a map (either single key->value, or multiple key->[value1, value2...]), `Stream` type comes with two handy functions for this case, now showing the more generic (complex) `groupBy` function:
-
-```apex
-List<Tuple2> tuples = new List<Tuple2>{
-        Tuple2.of('Bob', 'sales'),
-        Tuple2.of('Mary', 'engineering'),
-        Tuple2.of('John', 'engineering'),
-        Tuple2.of('George', 'management')
-};
-
-Map<Object, List<String>> peopleByRole = (Map<Object, List<String>>)
-        Stream.of(tuples) // you can do any fmap/bind/filter before the final `foldLeft'
-                .foldLeft(
-                    Stream.groupBy(Tuple2.sndFn(), Tuple2.fstFn(), new List<String>()),
-                    new Map<Object, List<String>>()
-                );
-
-System.assertEquals(
-        new Map<Object, List<String>>{
-                'sales' => new List<String>{ 'Bob' },
-                'engineering' => new List<String>{ 'Mary', 'John' },
-                'management' => new List<String>{ 'George' }
-        },
-        peopleByRole
-);
-```
-
 ### Dealing with null values
 
 tired of `null` checks? then check the `Maybe` type out:
@@ -212,6 +185,32 @@ List<String> allButFoo =
             .toList();
 ```
 
+Many times you need to group values into a map (either single key->value, or multiple key->[value1, value2...]), `Stream` type comes with two handy functions for this case, now showing the more generic (complex) `groupBy` function:
+
+```apex
+List<Tuple2> tuples = new List<Tuple2>{
+        Tuple2.of('Bob', 'sales'),
+        Tuple2.of('Mary', 'engineering'),
+        Tuple2.of('John', 'engineering'),
+        Tuple2.of('George', 'management')
+};
+
+Map<Object, List<String>> peopleByRole = (Map<Object, List<String>>)
+        Stream.of(tuples) // you can do any fmap/bind/filter before the final `foldLeft'
+                .foldLeft(
+                    Stream.groupBy(Tuple2.sndFn(), Tuple2.fstFn(), new List<String>()),
+                    new Map<Object, List<String>>()
+                );
+
+System.assertEquals(
+        new Map<Object, List<String>>{
+                'sales' => new List<String>{ 'Bob' },
+                'engineering' => new List<String>{ 'Mary', 'John' },
+                'management' => new List<String>{ 'George' }
+        },
+        peopleByRole
+);
+```
 
 ### Dealing with errors without exceptions (and without early returns)
 
