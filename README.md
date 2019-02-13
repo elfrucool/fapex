@@ -6,7 +6,7 @@ Functional Salesforce Apex Library
 
 This library brings to Salesforce Apex programming language the foundation of functional programming (FP). Although it's far from perfect (the author is neither Apex nor FP expert) I hope missing parts could be built on top of it.
 
-It is similar to other libraries like [apex-lambda](https://github.com/ipavlic/apex-lambda) and [R.apex](https://github.com/Click-to-Cloud/R.apex) but it tries to be more generic (not just for `SObject` type) and to use strictly functional programming principles (purity, referential transparency, good category theory)
+It is similar to other libraries like [apex-lambda](https://github.com/ipavlic/apex-lambda) and [R.apex](https://github.com/Click-to-Cloud/R.apex) (they are awesome, really), it tries to be more generic (not just for `SObject` type) and to use strictly functional programming principles (purity, referential transparency, good category theory, laziness)
 
 ## Installation
 
